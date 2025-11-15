@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEURO-CASINO 9000</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #00ff00;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 255, 0, 0.1) 0px,
+                rgba(0, 255, 0, 0.1) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid #00ff00;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            color: #00ff88;
+            margin-top: 10px;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00; }
+            to { text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00, 0 0 40px #00ff00; }
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* Стили для однорукого бандита */
+        .slot-machine {
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border: 3px solid #00ff00;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slot-machine::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .slot-display {
+            background: #000;
+            border: 4px solid #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 120px;
+            position: relative;
+        }
+
+        .reel {
+            width: 80px;
+            height: 80px;
+            background: #111;
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            transition: all 0.3s ease;
+        }
+
+        .reel.spinning {
+            animation: spin 0.1s infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translateY(-10px); opacity: 0.5; }
+            100% { transform: translateY(10px); opacity: 1; }
+        }
+
+        .slot-controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .slot-controls input {
+            flex: 1;
+            padding: 12px;
+            background: #000;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            color: #00ff00;
+            font-size: 1.1em;
+        }
+
+        .slot-controls button {
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #00ff00, #00ff88);
+            border: none;
+            border-radius: 5px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .slot-controls button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #00ff00;
+        }
+
+        .slot-controls button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Панель информации */
+        .info-panel {
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border: 2px solid #00ff00;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+
+        .balance {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 255, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .balance-amount {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00ff88;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .stats {
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(0, 255, 0, 0.05);
+            border-radius: 5px;
+        }
+
+        .ai-message {
+            background: rgba(0, 255, 0, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #00ff00;
+            margin-top: 20px;
+            min-height: 80px;
+        }
+
+        .message {
+            color: #00ff88;
+            font-style: italic;
+        }
+
+        /* Кнопки игр */
+        .game-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .game-btn {
+            padding: 15px;
+            background: linear-gradient(45deg, #00ff00, #00ff88);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .game-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #00ff00;
+        }
+
+        .game-btn.secondary {
+            background: linear-gradient(45deg, #ff00ff, #ff88ff);
+        }
+
+        /* Анимации выигрыша */
+        @keyframes winGlow {
+            0% { box-shadow: 0 0 20px #00ff00; }
+            50% { box-shadow: 0 0 40px #00ff00, 0 0 60px #00ff00; }
+            100% { box-shadow: 0 0 20px #00ff00; }
+        }
+
+        .win-animation {
+            animation: winGlow 0.5s ease-in-out 3;
+        }
+
+        .jackpot {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            color: gold;
+            text-shadow: 0 0 20px gold;
+            z-index: 1000;
+            animation: jackpotAnim 2s ease-in-out;
+            display: none;
+        }
+
+        @keyframes jackpotAnim {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .game-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .reel {
+                width: 60px;
+                height: 60px;
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg"></div>
+    <div class="jackpot" id="jackpot">🎰 ДЖЕКПОТ! 🎰</div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>NEURO-CASINO 9000</h1>
+            <div class="subtitle">ИИ который чувствует твою удачу! 🎯</div>
+        </div>
+
+        <div class="game-area">
+            <div class="slot-machine">
+                <h2>🎰 НЕЙРО-АВТОМАТ 3000</h2>
+                <div class="slot-display" id="slotDisplay">
+                    <div class="reel" id="reel1">🎰</div>
+                    <div class="reel" id="reel2">🎰</div>
+                    <div class="reel" id="reel3">🎰</div>
+                </div>
+                <div class="slot-controls">
+                    <input type="number" id="betAmount" placeholder="Ставка" min="10" max="1000" value="100">
+                    <button onclick="spinSlots()" id="spinBtn">🎯 КРУТИТЬ!</button>
+                </div>
+                <div class="game-buttons">
+                    <button class="game-btn" onclick="playCoinFlip()">🎲 Квантовая Монета</button>
+                    <button class="game-btn secondary" onclick="getAIPrediction()">🔮 Предсказание ИИ</button>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="balance">
+                    <div>НЕЙРО-БАЛАНС</div>
+                    <div class="balance-amount" id="balance">1000</div>
+                    <div>нейро-кредитов</div>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-item">
+                        <span>🎯 Сыграно игр:</span>
+                        <span id="gamesPlayed">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>🤖 ИИ-Персона:</span>
+                        <span id="aiPerson">Загрузка...</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>📊 Уровень удачи:</span>
+                        <span id="luckLevel">50%</span>
+                    </div>
+                </div>
+
+                <div class="ai-message">
+                    <div class="message" id="aiMessage">
+                        🌀 Добро пожаловать в Нейро-Казино! ИИ анализирует ваши шансы...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Игровые переменные
+        let balance = 1000;
+        let gamesPlayed = 0;
+        let aiPersonality = "🤖 Холодный алгоритм";
+        let isSpinning = false;
+
+        // Символы для автомата
+        const symbols = ["🍒", "🍋", "🔔", "⭐", "7️⃣", "💎", "🎯", "🌈"];
+        
+        // Инициализация
+        function init() {
+            updateDisplay();
+            const personalities = [
+                "🤖 Холодный алгоритм", 
+                "🔮 Мистический оракул", 
+                "🎭 Таинственный незнакомец",
+                "👾 Кибер-пророк"
+            ];
+            aiPersonality = personalities[Math.floor(Math.random() * personalities.length)];
+            document.getElementById('aiPerson').textContent = aiPersonality;
+        }
+
+        // Обновление интерфейса
+        function updateDisplay() {
+            document.getElementById('balance').textContent = balance;
+            document.getElementById('gamesPlayed').textContent = gamesPlayed;
+            document.getElementById('luckLevel').textContent = Math.min(100, Math.max(0, Math.floor((balance - 1000) / 10 + 50))) + '%';
+        }
+
+        // Функция вращения слотов
+        function spinSlots() {
+            if (isSpinning) return;
+            
+            const betAmount = parseInt(document.getElementById('betAmount').value);
+            if (isNaN(betAmount) || betAmount < 10 || betAmount > 1000) {
+                showMessage("🚫 Ставка должна быть от 10 до 1000!", "error");
+                return;
+            }
+            
+            if (betAmount > balance) {
+                showMessage("💸 Недостаточно нейро-кредитов!", "error");
+                return;
+            }
+
+            isSpinning = true;
+            document.getElementById('spinBtn').disabled = true;
+            balance -= betAmount;
+            gamesPlayed++;
+            updateDisplay();
+
+            // Анимация вращения
+            const reels = [document.getElementById('reel1'), document.getElementById('reel2'), document.getElementById('reel3')];
+            
+            reels.forEach(reel => {
+                reel.classList.add('spinning');
+                reel.textContent = "🌀";
+            });
+
+            showMessage("🎰 НЕЙРО-СЛОТЫ АКТИВИРОВАНЫ...", "processing");
+
+            // Результаты вращения
+            setTimeout(() => {
+                const results = [
+                    symbols[Math.floor(Math.random() * symbols.length)],
+                    symbols[Math.floor(Math.random() * symbols.length)],
+                    symbols[Math.floor(Math.random() * symbols.length)]
+                ];
+
+                // Остановка барабанов по очереди
+                reels.forEach((reel, index) => {
+                    setTimeout(() => {
+                        reel.classList.remove('spinning');
+                        reel.textContent = results[index];
+                    }, 500 * (index + 1));
+                });
+
+                // Проверка выигрыша
+                setTimeout(() => checkWin(results, betAmount), 2000);
+            }, 1000);
+        }
+
+        // Проверка выигрышной комбинации
+        function checkWin(results, betAmount) {
+            let winAmount = 0;
+            let message = "";
+            let messageType = "info";
+
+            if (results[0] === results[1] && results[1] === results[2]) {
+                // Джекпот
+                winAmount = betAmount * 20;
+                balance += winAmount;
+                showJackpot();
+                message = `🎉 НЕЙРО-ДЖЕКПОТ! ВЫИГРЫШ: ${winAmount} нейро-кредитов!`;
+                messageType = "win";
+            } else if (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]) {
+                // Частичное совпадение
+                winAmount = betAmount * 3;
+                balance += winAmount;
+                message = `⭐ СОВПАДЕНИЕ! ВЫИГРЫШ: ${winAmount} нейро-кредитов!`;
+                messageType = "win";
+            } else {
+                message = "🌪️ НЕЙРО-ХАОС! Попробуйте снова...";
+                messageType = "lose";
+            }
+
+            showMessage(message, messageType);
+            updateDisplay();
+            isSpinning = false;
+            document.getElementById('spinBtn').disabled = false;
+
+            // Проверка конца игры
+            if (balance <= 0) {
+                setTimeout(() => {
+                    showMessage("💥 НЕЙРО-БАЛАНС ИСЧЕРПАН! ИИ рекомендует изучать Python! 🐍", "error");
+                    document.getElementById('spinBtn').disabled = true;
+                }, 1000);
+            }
+        }
+
+        // Показать сообщение
+        function showMessage(text, type) {
+            const messageElement = document.getElementById('aiMessage');
+            messageElement.textContent = text;
+            
+            // Сброс классов
+            messageElement.className = 'message';
+            if (type === 'win') {
+                messageElement.style.color = '#00ff88';
+            } else if (type === 'error') {
+                messageElement.style.color = '#ff4444';
+            } else if (type === 'processing') {
+                messageElement.style.color = '#00ffff';
+            } else {
+                messageElement.style.color = '#00ff88';
+            }
+        }
+
+        // Анимация джекпота
+        function showJackpot() {
+            const jackpot = document.getElementById('jackpot');
+            jackpot.style.display = 'block';
+            setTimeout(() => {
+                jackpot.style.display = 'none';
+            }, 3000);
+        }
+
+        // Другие игры
+        function playCoinFlip() {
+            showMessage("🌀 АКТИВИРУЮ КВАНТОВЫЙ ГЕНЕРАТОР...", "processing");
+            setTimeout(() => {
+                const win = Math.random() > 0.48; // Небольшое преимущество казино
+                if (win) {
+                    const winAmount = 50;
+                    balance += winAmount;
+                    showMessage(`🌈 ВЫ В РЕЗОНАНСЕ С ВСЕЛЕННОЙ! +${winAmount} нейро-кредитов!`, "win");
+                } else {
+                    const loseAmount = 50;
+                    balance -= loseAmount;
+                    showMessage(`🌪️ КВАНТОВАЯ НЕОПРЕДЕЛЕННОСТЬ! -${loseAmount} нейро-кредитов`, "lose");
+                }
+                gamesPlayed++;
+                updateDisplay();
+            }, 2000);
+        }
+
+        function getAIPrediction() {
+            const predictions = [
+                "🔮 ИИ видит: Завтра вас ждет неожиданная прибыль!",
+                "🌌 Космические силы сегодня на вашей стороне!",
+                "⚡ Алгоритмы советуют осторожность - магнитные бури!",
+                "🎯 Ваша аура идеально совпадает с нейро-слотами!",
+                "💫 Квантовые частицы шепчут: попробуйте число 7!",
+                "🚫 Избегайте ставок сегодня после 18:00!"
+            ];
+            showMessage(predictions[Math.floor(Math.random() * predictions.length)], "info");
+        }
+
+        // Запуск игры
+        init();
+    </script>
+</body>
+</html>
